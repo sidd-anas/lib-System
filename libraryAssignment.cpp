@@ -37,6 +37,26 @@ typedef struct {
     int userCount;
 } LibrarySystem;
 
+// ===== Helper Function: Username Validation =====
+int isValidUsername(const char* username) {
+    int hasLower = 0, hasUpper = 0, hasDigit = 0;
+
+    for (int i = 0; username[i] != '\0'; i++) {
+        char c = username[i];
+
+        if (islower(c)) hasLower = 1;          
+        else if (isupper(c)) hasUpper = 1;     
+        else if (isdigit(c)) hasDigit = 1;     
+        else if (c == '-' || c == '/' || c == '@' || c == '#') {
+            // allowed special characters
+        } else {
+            return 0; // agar koi aur character mila to invalid
+        }
+    }
+
+    return (hasLower && hasUpper && hasDigit);
+}
+
 int registerUser(LibrarySystem* lib, const char* username, const char* password, const char* name);
 int addBook(LibrarySystem* lib, const char* title, const char* author, const char* isbn);
 
@@ -50,15 +70,23 @@ void initializeSystem(LibrarySystem* lib) {
     addBook(lib, "1984", "George Orwell", "9780452284234");
     
     // Add sample users
-    registerUser(lib, "admin", "admin123", "Admin User");
-    registerUser(lib, "user1", "password", "John Doe");
+    registerUser(lib, "Admin123@", "admin123", "Admin User");
+    registerUser(lib, "User1#1", "password", "John Doe");
 }
 
 int registerUser(LibrarySystem* lib, const char* username, const char* password, const char* name) {
     if (lib->userCount >= MAX_USERS) return 0;
+
+    // username validation check
+    if (!isValidUsername(username)) {
+        printf("Error: Username must contain atleast one uppercase one lowercase and one digit!\n");
+        printf("and atleast one special character from: - / @ #\n");
+        return 0;
+    }
     
     for (int i = 0; i < lib->userCount; i++) {
         if (strcmp(lib->users[i].username, username) == 0) {
+            printf("this user already exist!.\n");
             return 0;
         }
     }
@@ -203,9 +231,10 @@ int main() {
     initializeSystem(&lib);
     int choice, bookId;
     char username[USERNAME_LEN], password[PASSWORD_LEN], name[30];
-    char title[TITLE_LEN], author[AUTHOR_LEN], isbn[ISBN_LEN];
     
     printf("Welcome to Library System!\n");
+    printf("Note: username must contain atleast one lowercase one uppercase and one digit!\n");
+    printf("it must contain one: - / @ # special character\n");
     
     while (1) {
         displayMenu();
